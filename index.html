@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101722">
+<title>WebWindow</title>
+<style>
+:root{color-scheme:dark;--bg:#101722;--panel:#182231;--panel2:#202d3e;--text:#eef4fc;--muted:#9eacbf;--line:rgba(255,255,255,.09);--accent:#5b8def;--accent2:#80a9ff;--shadow:0 18px 55px rgba(0,0,0,.34);--danger:#f07474}
+:root[data-theme="light"]{color-scheme:light;--bg:#f3f6fb;--panel:#fff;--panel2:#edf2f9;--text:#182335;--muted:#718096;--line:rgba(28,45,70,.12);--accent:#356fd5;--accent2:#245fc4;--shadow:0 18px 55px rgba(32,55,90,.16);--danger:#d84f58}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+button,input{font:inherit}button{cursor:pointer}#app{height:100%;width:100%;position:relative;background:var(--bg)}
+#stage{position:absolute;inset:0;background:var(--bg)}.site-frame{width:100%;height:100%;border:0;background:#fff;display:none}.site-frame.active{display:block}
+#menuButton{position:absolute;z-index:5;top:max(14px,env(safe-area-inset-top));left:16px;width:44px;height:44px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--panel) 90%,transparent);color:var(--text);box-shadow:0 5px 22px rgba(0,0,0,.16);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;font-size:22px}
+#menuButton:hover,.iconBtn:hover{background:var(--panel2)}#menuButton svg{width:21px;height:21px}
+#start{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 15% 15%,rgba(91,141,239,.13),transparent 42%),radial-gradient(ellipse at 90% 85%,rgba(91,141,239,.09),transparent 38%),var(--bg)}
+.startCard{width:min(100%,460px);padding:clamp(24px,5vw,38px);border:1px solid var(--line);border-radius:26px;background:var(--panel);box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:32px}.brandMark{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#75a3ff,#356fd5);display:grid;place-items:center;color:white;font-size:20px;font-weight:800;box-shadow:0 8px 20px #356fd544}.brandName{font-size:18px;font-weight:750;letter-spacing:-.4px}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1.7px;color:var(--accent);font-weight:750}h1{font-size:clamp(25px,5vw,32px);line-height:1.15;letter-spacing:-1px;margin:9px 0 10px}.sub{font-size:14px;line-height:1.65;color:var(--muted);margin:0 0 25px}
+.urlRow{display:flex;gap:9px}.urlInput{min-width:0;flex:1;border:1px solid var(--line);border-radius:13px;background:var(--panel2);color:var(--text);padding:14px 15px;outline:none}.urlInput:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.primary{border:0;border-radius:13px;padding:0 19px;background:var(--accent);color:white;font-weight:700;transition:.18s}.primary:hover{background:var(--accent2);transform:translateY(-1px)}.hint{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5}.modeRow{display:flex;gap:8px;margin:0 0 13px}.modeBtn{flex:1;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--muted);padding:10px;font-size:12px;font-weight:700}.modeBtn.selected{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,var(--panel2));color:var(--text)}.modeInfo{font-size:11px;color:var(--muted);min-height:30px;margin:0 0 10px;line-height:1.45}#error{font-size:12px;color:var(--danger);min-height:18px;margin-top:9px}
+#drawerBackdrop{position:absolute;inset:0;z-index:7;background:rgba(0,0,0,.32);opacity:0;pointer-events:none;transition:opacity .22s}
+#drawer{position:absolute;z-index:8;left:0;top:0;bottom:0;width:min(390px,92vw);padding:calc(20px + env(safe-area-inset-top)) 18px calc(20px + env(safe-area-inset-bottom));background:var(--panel);border-right:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(-102%);transition:transform .25s cubic-bezier(.2,.75,.2,1);display:flex;flex-direction:column}
+.drawerOpen #drawer{transform:translateX(0)}.drawerOpen #drawerBackdrop{opacity:1;pointer-events:auto}
+.drawerHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}.drawerTitle{font-size:19px;font-weight:760;letter-spacing:-.4px}.iconBtn{width:38px;height:38px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--text);display:grid;place-items:center;font-size:19px}
+.drawerSub{font-size:12px;color:var(--muted);margin:0 0 19px}.windowList{overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:2px 2px 14px}
+.windowCard{min-width:0;border:1px solid var(--line);border-radius:16px;background:var(--panel2);padding:9px;text-align:left;color:var(--text);position:relative;transition:.16s}.windowCard.active{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent)}
+.preview{height:91px;border-radius:10px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#273a58,#17263b)}.preview img{width:30px;height:30px;object-fit:contain;border-radius:7px;background:#fff;padding:4px;z-index:1}.preview .fallback{font-size:25px;color:#dce8ff;z-index:1}
+.siteName{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:9px 2px 3px}.siteUrl{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 2px}
+.cardActions{display:flex;gap:6px;margin-top:9px}.smallBtn{flex:1;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--text);font-size:10px;font-weight:650;padding:7px 4px}.smallBtn:hover{border-color:var(--accent)}.smallBtn.remove{flex:0 0 31px;color:var(--danger)}
+.addCard{min-height:154px;border:1px dashed color-mix(in srgb,var(--accent) 55%,var(--line));border-radius:16px;background:transparent;color:var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;font-size:12px;font-weight:700}.addCircle{width:38px;height:38px;border-radius:50%;background:color-mix(in srgb,var(--accent) 13%,transparent);display:grid;place-items:center;font-size:24px}
+.drawerFoot{margin-top:auto;border-top:1px solid var(--line);padding-top:15px;display:flex;align-items:center;justify-content:space-between;gap:10px}.themeLabel{font-size:12px;color:var(--muted);font-weight:650}.themeToggle{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}.themeToggle button{border:0;border-radius:8px;background:transparent;color:var(--muted);padding:8px 10px;font-size:11px;font-weight:700}.themeToggle button.selected{background:var(--panel);color:var(--text);box-shadow:0 1px 5px rgba(0,0,0,.1)}
+#addModal{position:absolute;z-index:10;inset:0;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.45)}#addModal.show{display:flex}.modalCard{width:min(100%,420px);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:23px;box-shadow:var(--shadow)}.modalTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.modalTop strong{font-size:17px}.modalCard p{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 17px}.modalCard input{width:100%;margin-bottom:12px}.modalActions{display:flex;justify-content:flex-end;gap:8px}.secondary{border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);padding:11px 15px;font-size:12px;font-weight:700}.modalActions .primary{padding:0 17px}
+#toast{position:absolute;z-index:12;bottom:22px;left:50%;transform:translate(-50%,15px);opacity:0;pointer-events:none;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text);transition:.2s}#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:480px){.urlRow{flex-direction:column}.urlRow .primary{height:47px}.startCard{border-radius:22px}.windowList{gap:9px}.preview{height:82px}}
+</style>
+</head>
+<body>
+<div id="app">
+ <main id="stage"></main>
+ <section id="start"><div class="startCard">
+  <div class="brand"><div class="brandMark">W</div><div class="brandName">WebWindow</div></div>
+  <div class="eyebrow">Your web space</div><h1>Buka website.<br>Tanpa gangguan.</h1>
+  <p class="sub">Masukkan alamat website atau kata kunci pencarian. Pilih mode browsing terlebih dahulu.</p>
+  <div class="modeRow" role="group" aria-label="Mode browsing"><button type="button" class="modeBtn" data-mode="direct">Direct</button><button type="button" class="modeBtn" data-mode="proxy">Proxy</button></div><p id="modeInfo" class="modeInfo"></p>
+  <form id="startForm"><div class="urlRow"><input id="startUrl" class="urlInput" type="text" inputmode="url" autocomplete="url" placeholder="Alamat website atau pencarian" aria-label="Alamat website" required><button class="primary" type="submit">Buka</button></div><div id="error"></div></form>
+  <div class="hint">Contoh: sstik.io, https://example.com, localhost:8000, atau cukup ketik kata kunci</div>
+ </div></section>
+ <button id="menuButton" aria-label="Buka daftar jendela" title="Jendela"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+ <div id="drawerBackdrop"></div>
+ <aside id="drawer"><div class="drawerHead"><div class="drawerTitle">Jendela website</div><button id="closeDrawer" class="iconBtn" aria-label="Tutup">×</button></div>
+  <p class="drawerSub">Pilih halaman yang ingin ditampilkan atau tambahkan jendela baru.</p><div class="modeRow" role="group" aria-label="Mode browsing"><button type="button" class="modeBtn" data-mode="direct">Direct</button><button type="button" class="modeBtn" data-mode="proxy">Proxy</button></div><p id="drawerModeInfo" class="modeInfo"></p><div id="windowList" class="windowList"></div>
+  <div class="drawerFoot"><span class="themeLabel">Tampilan</span><div class="themeToggle" role="group" aria-label="Pilih tema"><button data-theme-choice="dark">☾ Dark</button><button data-theme-choice="light">☀ Light</button></div></div>
+ </aside>
+ <div id="addModal"><form id="addForm" class="modalCard"><div class="modalTop"><strong>Tambah website</strong><button type="button" id="closeModal" class="iconBtn" aria-label="Tutup">×</button></div>
+  <p>Masukkan alamat website untuk membuat jendela baru.</p><input id="newUrl" class="urlInput" type="text" inputmode="url" placeholder="https://contoh.com" required><div id="modalError" style="font-size:11px;color:var(--danger);min-height:16px;margin:-5px 0 10px"></div>
+  <div class="modalActions"><button type="button" id="cancelAdd" class="secondary">Batal</button><button type="submit" class="primary">Tambah jendela</button></div>
+ </form></div><div id="toast" role="status"></div>
+</div>
+<script>
+(() => {
+ const $=id=>document.getElementById(id);
+ const state={windows:[],activeId:null,theme:localStorage.getItem('ww-theme')||'dark',mode:localStorage.getItem('ww-mode')||'direct'};
+ const stage=$('stage');
+function normalizeUrl(value){
+  let raw=value.trim();if(!raw)throw Error('Masukkan alamat website terlebih dahulu.');
+  const hasScheme=/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw);
+  const isLocal=/^(localhost|\d{1,3}(\.\d{1,3}){3})(:\d+)?([\/?#].*)?$/i.test(raw);
+  const looksUrl=hasScheme||isLocal||/^[^\s\/]+\.[^\s\/.]{2,}(:\d+)?([\/?#]\S*)?$/.test(raw);
+  if(!looksUrl)return 'https://html.duckduckgo.com/html/?q='+encodeURIComponent(raw);
+  if(!hasScheme)raw=(isLocal?'http://':'https://')+raw;
+  let u;try{u=new URL(raw)}catch{throw Error('Alamat website tidak valid.')}
+  if(!['http:','https:'].includes(u.protocol))throw Error('Gunakan alamat website http atau https.');
+  return u.href;
+ }
+ const host=url=>{try{return new URL(url).hostname.replace(/^www\./,'')}catch{return url}};
+ const sid=()=>Math.random().toString(36).slice(2,12).replace(/[^a-z0-9]/g,'');
+ const proxyUrl=(id,url)=>{const u=new URL(url);return `/x/${id}/${u.protocol.slice(0,-1)}/${u.host}${u.pathname||'/'}${u.search}${u.hash}`};
+ const favicon=url=>'https://www.google.com/s2/favicons?domain='+encodeURIComponent(host(url))+'&sz=128';
+ function applyMode(){const direct=state.mode==='direct';document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===state.mode));const msg=direct?'Direct: website dibuka di WebView Android native. Lebih kompatibel, tetapi masuk ke tampilan browser penuh.':'Proxy: website ditampilkan di jendela WebWindow melalui Flask. Sebagian situs dapat gagal.';$('modeInfo').textContent=msg;$('drawerModeInfo').textContent=msg;localStorage.setItem('ww-mode',state.mode);if(!direct&&window.WebWindowAndroid&&window.WebWindowAndroid.closeDirect)window.WebWindowAndroid.closeDirect()}
+ function applyTheme(){document.documentElement.dataset.theme=state.theme;document.querySelector('meta[name="theme-color"]').content=state.theme==='dark'?'#101722':'#f3f6fb';document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('selected',b.dataset.themeChoice===state.theme));localStorage.setItem('ww-theme',state.theme)}
+ function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),2600)}
+ function closeDrawer(){$('app').classList.remove('drawerOpen')}
+ function showStart(){$('start').style.display='flex';$('menuButton').style.display='none';stage.innerHTML=''}
+ function activate(id){
+  const w=state.windows.find(x=>x.id===id);if(!w)return;state.activeId=id;
+  if(state.mode==='direct' && window.WebWindowAndroid && window.WebWindowAndroid.openDirect){window.WebWindowAndroid.openDirect(w.url);closeDrawer();return;}
+  let frame=stage.querySelector(`iframe[data-window-id="${id}"]`);if(!frame){frame=createProxyFrame(w);stage.appendChild(frame)}
+  stage.querySelectorAll('iframe').forEach(f=>f.classList.toggle('active',f.dataset.windowId===id));
+  $('start').style.display='none';$('menuButton').style.display='flex';renderCards();
+ }
+ function createProxyFrame(w){const frame=document.createElement('iframe');frame.className='site-frame';frame.dataset.windowId=w.id;frame.title=host(w.url);frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-downloads allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation');frame.setAttribute('allow','fullscreen; autoplay; encrypted-media; picture-in-picture; clipboard-write');frame.setAttribute('allowfullscreen','');frame.referrerPolicy='no-referrer';frame.src=proxyUrl(w.id,w.url);return frame}
+ function createWindow(url){
+  const id=sid();const w={id,url};state.windows.push(w);
+  if(state.mode==='direct' && window.WebWindowAndroid && window.WebWindowAndroid.openDirect){state.activeId=id;$('start').style.display='none';$('menuButton').style.display='flex';renderCards();window.WebWindowAndroid.openDirect(url);closeDrawer();return;}
+  stage.appendChild(createProxyFrame(w));activate(id);closeDrawer();
+ }
+ function renderCards(){
+  const list=$('windowList');list.innerHTML='';
+  state.windows.forEach(w=>{
+   const card=document.createElement('div');card.className='windowCard'+(w.id===state.activeId?' active':'');
+   const preview=document.createElement('div');preview.className='preview';
+   const img=document.createElement('img');img.src=favicon(w.url);img.alt='';img.onerror=()=>{img.remove();const f=document.createElement('span');f.className='fallback';f.textContent='◈';preview.appendChild(f)};preview.appendChild(img);
+   const name=document.createElement('div');name.className='siteName';name.textContent=host(w.url);
+   const url=document.createElement('div');url.className='siteUrl';url.textContent=w.url;
+   const actions=document.createElement('div');actions.className='cardActions';
+   const open=document.createElement('button');open.className='smallBtn';open.textContent=w.id===state.activeId?'Sedang dibuka':'Buka';open.onclick=()=>activate(w.id);
+   const external=document.createElement('button');external.className='smallBtn';external.textContent='Direct';external.onclick=()=>{if(window.WebWindowAndroid&&window.WebWindowAndroid.openDirect)window.WebWindowAndroid.openDirect(w.url);else window.open(w.url,'_blank','noopener')};
+   const remove=document.createElement('button');remove.className='smallBtn remove';remove.textContent='×';remove.title='Hapus jendela';remove.onclick=()=>removeWindow(w.id);
+   actions.append(open,external,remove);card.append(preview,name,url,actions);list.appendChild(card);
+  });
+  const add=document.createElement('button');add.className='addCard';add.innerHTML='<span class="addCircle">+</span><span>Tambah jendela</span>';add.onclick=openAdd;list.appendChild(add);
+ }
+ function removeWindow(id){
+  const w=state.windows.find(x=>x.id===id);if(!w)return;state.windows=state.windows.filter(x=>x.id!==id);
+  const f=stage.querySelector(`iframe[data-window-id="${id}"]`);if(f)f.remove();
+  if(state.activeId===id){if(state.windows.length)activate(state.windows[Math.min(0,state.windows.length-1)].id);else{state.activeId=null;showStart()}}
+  renderCards();
+ }
+ function openAdd(){$('addModal').classList.add('show');$('newUrl').value='';$('modalError').textContent='';setTimeout(()=>$('newUrl').focus(),60)}
+ function closeAdd(){$('addModal').classList.remove('show')}
+ $('startForm').addEventListener('submit',e=>{e.preventDefault();try{$('error').textContent='';createWindow(normalizeUrl($('startUrl').value))}catch(err){$('error').textContent=err.message}});
+ $('addForm').addEventListener('submit',e=>{e.preventDefault();try{$('modalError').textContent='';createWindow(normalizeUrl($('newUrl').value));closeAdd()}catch(err){$('modalError').textContent=err.message}});
+ $('menuButton').onclick=()=>{if(state.windows.length){$('app').classList.add('drawerOpen');renderCards()}};
+ $('closeDrawer').onclick=closeDrawer;$('drawerBackdrop').onclick=closeDrawer;
+ $('closeModal').onclick=closeAdd;$('cancelAdd').onclick=closeAdd;$('addModal').onclick=e=>{if(e.target===$('addModal'))closeAdd()};
+ document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>{state.theme=b.dataset.themeChoice;applyTheme()});document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.mode;applyMode();if(state.activeId)activate(state.activeId)});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();closeAdd()}});
+ applyTheme();applyMode();
+})();
+</script>
+</body></html>
